@@ -486,82 +486,88 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      document.getElementById('techApplication').addEventListener('submit', function(e) {
-          e.preventDefault();  // Prevent default form submission
-  
-          // Collecting form data
-          const formData = {
-              name: document.getElementById('fullName').value,
-              email: document.getElementById('email').value,
-              phone: document.getElementById('phone').value,
-              location: document.getElementById('location').value,
-              gender: document.getElementById('gender').value,
-              ageGroup: document.getElementById('ageGroup').value,
-              payer: document.getElementById('payer').value,
-              program: document.getElementById('program').value,
-              hasLaptop: document.getElementById('hasLaptop').value,
-              reason: document.getElementById('reason').value,
-              background: document.getElementById('background').value,
-              paymentOption: document.getElementById('paymentPlan').value
-          };
-  
-          // Send form data to Google Apps Script (Web App URL)
-          fetch('https://script.google.com/macros/s/AKfycby9ZaxrYQBfxhm1EIxBQC9H3uQ1BY2XGP4Nx2II5dwub0jm8A3EhaRXpBtZfqy1WhYL/exec', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(formData)
-          })
-          .then(response => response.json())
-          .then(data => {
-              if (data.result === 'success') {
-                  alert('Form submitted successfully');
-                  // Optionally, redirect or clear form here
-              } else {
-                  alert('Error submitting form');
-              }
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              alert('Error submitting form');
+        // Handle multi-step form navigation
+        const steps = document.querySelectorAll('.form-step');
+        const nextBtns = document.querySelectorAll('.next-step');
+        const prevBtns = document.querySelectorAll('.prev-step');
+        const stepIndicators = document.querySelectorAll('.step');
+      
+        nextBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const nextStep = btn.dataset.next;
+            updateFormStep(nextStep);
           });
-      });
-  
-      // Step navigation
-      const steps = document.querySelectorAll(".form-step");
-      const nextBtns = document.querySelectorAll(".next-step");
-      const prevBtns = document.querySelectorAll(".prev-step");
-  
-      nextBtns.forEach((btn) => {
-          btn.addEventListener("click", () => {
-              const nextStep = parseInt(btn.dataset.next);
-              changeStep(nextStep);
+        });
+      
+        prevBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const prevStep = btn.dataset.prev;
+            updateFormStep(prevStep);
           });
-      });
-  
-      prevBtns.forEach((btn) => {
-          btn.addEventListener("click", () => {
-              const prevStep = parseInt(btn.dataset.prev);
-              changeStep(prevStep);
+        });
+      
+        function updateFormStep(stepNumber) {
+          steps.forEach(step => {
+            step.classList.remove('active');
+            if (step.dataset.step === stepNumber) {
+              step.classList.add('active');
+            }
           });
-      });
-  
-      function changeStep(step) {
-          steps.forEach((el) => el.classList.remove("active"));
-          const target = document.querySelector(`.form-step[data-step="${step}"]`);
-          if (target) {
-              target.classList.add("active");
-              target.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-  
-          const progressSteps = document.querySelectorAll(".progress-steps .step");
-          progressSteps.forEach((el) => {
-              const stepNum = parseInt(el.dataset.step);
-              el.classList.toggle("active", stepNum === step);
+      
+          stepIndicators.forEach(indicator => {
+            indicator.classList.remove('active');
+            if (indicator.dataset.step === stepNumber) {
+              indicator.classList.add('active');
+            }
           });
-      }
-  </script>
+        }
+      
+        // Handle form submission
+        
+        document.getElementById('techApplication').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent form submission
+
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                location: document.getElementById('location').value,
+                gender: document.getElementById('gender').value,
+                ageGroup: document.getElementById('ageGroup').value,
+                payer: document.getElementById('payer').value,
+                program: document.getElementById('program').value,
+                hasLaptop: document.getElementById('hasLaptop').value,
+                reason: document.getElementById('reason').value,
+                background: document.getElementById('background').value,
+                paymentPlan: document.getElementById('paymentPlan').value,
+            };
+
+            // Send data to SheetDB API
+            fetch('https://sheetdb.io/api/v1/tdfgtjwgz1nqa', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data: [formData] }), // Send as an array
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Application Submitted Successfully!');
+                document.getElementById('techApplication').reset(); // Reset form after submission
+                
+                // Show the success modal
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Something went wrong. Please try again.');
+            });
+        });
+
+      </script>
+      
+      
   
     
     
